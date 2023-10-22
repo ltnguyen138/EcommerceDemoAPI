@@ -1,0 +1,23 @@
+server:
+  port: 8088
+  servlet:
+    context-path: /ecommerce
+spring:
+  datasource:
+    hikari:
+      password: '0009'
+      username: root
+    url: jdbc:mysql://localhost:3300/ecommerce_demo
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    show-sql: false
+jwt:
+  expiration: 2592000
+
+api:
+  prefix: api/v1
