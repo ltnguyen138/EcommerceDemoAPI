@@ -14,11 +14,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.Utility;
+import com.ecommerce.compoments.JwtTokenUtils;
 import com.ecommerce.dto.CartDTO;
 import com.ecommerce.entity.Cart;
 import com.ecommerce.entity.User;
 import com.ecommerce.service.CartService;
 import com.ecommerce.service.UserService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = "api/v1/carts")
@@ -29,50 +33,59 @@ public class CartRestController {
 	@Autowired
 	UserService userService;
 	
+	
 	@GetMapping	
-	public ResponseEntity<?> viewCart(@RequestParam("userId") Integer userId){
+	public ResponseEntity<?> viewCart(HttpServletRequest request){
 		
-		User user = userService.getUserById(userId);
+		User user = getAuthenticatedUser(request);
 		List<CartDTO> listCart = cartService.getCartByUser(user);
 		return ResponseEntity.ok(listCart);
 	}
 	
 	@PostMapping("/add/{productId}/{quantity}")
-	public ResponseEntity<?> addProduct(@RequestParam("userId") Integer userId,
+	public ResponseEntity<?> addProduct(HttpServletRequest request,
 			@PathVariable("productId") Integer productId, @PathVariable("quantity") Integer quantity){
 		
-		User user = userService.getUserById(userId);
+		User user = getAuthenticatedUser(request);
 		CartDTO cartDTO = cartService.addProduct(user, productId, quantity);
 		
 		return ResponseEntity.status(HttpStatus.CREATED).body(cartDTO);
 	}
 	
 	@PutMapping("/update/{productId}/{quantity}")
-	public ResponseEntity<?> updateProduct(@RequestParam("userId") Integer userId,
+	public ResponseEntity<?> updateProduct(HttpServletRequest request,
 			@PathVariable("productId") Integer productId, @PathVariable("quantity") Integer quantity){
 		
-		User user = userService.getUserById(userId);
+		User user = getAuthenticatedUser(request);
 		CartDTO cartDTO = cartService.updateProduct(user, productId, quantity);
 		
 		return ResponseEntity.status(HttpStatus.CREATED).body(cartDTO);
 	}
 	
 	@DeleteMapping("/remove/{productId}")
-	public ResponseEntity<?> removeProduct(@RequestParam("userId") Integer userId,
+	public ResponseEntity<?> removeProduct(HttpServletRequest request,
 			@PathVariable("productId") Integer productId){
 		
-		User user = userService.getUserById(userId);
+		User user = getAuthenticatedUser(request);
 		cartService.removeCart(user, productId);
 		
 		return ResponseEntity.ok("Xoa thanh cong");
 	}
 	
 	@GetMapping("/total_price")
-	public ResponseEntity<?> totalPriceInCart(@RequestParam("userId") Integer userId){
+	public ResponseEntity<?> totalPriceInCart(HttpServletRequest request){
 		
-		User user = userService.getUserById(userId);
+		User user = getAuthenticatedUser(request);
 		float totalPrice = cartService.getTotalPriceInCart(user);
 		
 		return ResponseEntity.ok(totalPrice);
+	}
+	
+	private User getAuthenticatedUser(HttpServletRequest request  ) {
+		
+		String phoneNumber = Utility.getPhoneNumberFromAuthenticated(request);
+		User user = userService.getUserByPhoneNumber(phoneNumber);
+		return user;
+		
 	}
 }
